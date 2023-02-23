@@ -1,51 +1,62 @@
+const val TYPE_1 = "Maestro"
+const val TYPE_2 = "MasterCard"
+const val MAXAMOUNT_TYPE_1 = 75000_00
+const val FIXCOMMISSION_TYPE_1 = 20_00
+const val COMMISSIONPERCENTAGE_TYPE_1 = 0.06
+const val TYPE_3 = "VISA"
+const val TYPE_4 = "Мир"
+const val FIXCOMMISSION_TYPE_3 = 35_00
+const val COMMISSIONPERCENTAGE_TYPE_3 = 0.0075
+const val TYPE_5 = "VK Pay"
+const val COMMISSIONPERCENTAGE_TYPE_5 = 0
+
 fun main() {
-    val transfer = transferPayment(12_000.0)
-    val transfer_2 = transferPayment(12_000.0, typeCard = "Maestro", amountOfTransfer = 65_000.0)
-    val transfer_3 = transferPayment(12_000.0, typeCard = "Мир")
+    testCalcPrint(type = TYPE_1, amountTransfer = 100_00)
+    testCalcPrint(TYPE_1, 400_00, 100_00)
+    testCalcPrint(TYPE_1, 100_000_00, 50_00)
+    testCalcPrint(TYPE_2, 0, 100_00)
+    testCalcPrint(TYPE_2, 400_00, 100_00)
+    testCalcPrint(TYPE_2, 100_000_00, 50_00)
+    testCalcPrint(TYPE_3, 0, 100_00)
+    testCalcPrint(TYPE_3, 400_00, 1000_00)
+    testCalcPrint(TYPE_3, 100_000_00, 5000_00)
+    testCalcPrint(TYPE_4, 0, 100_00)
+    testCalcPrint(TYPE_4, 400_00, 1000_00)
+    testCalcPrint(TYPE_4, 100_000_00, 5000_00)
+    testCalcPrint(TYPE_5, 100_000_00, 5000_00)
+    testCalcPrint(amountOfPreviousPurchases = 100_000_00, amountTransfer = 15000_00)
+    testCalcPrint(amountTransfer = 25000_00)
 }
 
-fun transferPayment(amount: Double, typeCard: String = "VK Pay", amountOfTransfer: Double = 0.0): Double {
-    return when (typeCard) {
-        "VK Pay" -> {
-            println("Сумма вашего первода $amount рублей")
-            amount
-        }
-        "Maestro", "MasterCard" -> calculationAmount(amount, amountOfTransfer)
-        "Мир","Visa" -> calculationAmountMirAndVisa(amount)
-        else -> 0.0
-    }
+fun testCalcPrint(type : String = TYPE_5,
+                  amountOfPreviousPurchases : Int = 0,
+                  amountTransfer : Int){
+    println("*************");
+    println("Сумма перевода: " + convertToRubKop(amountTransfer));
+    println("Тип карты: $type");
+    println("Сумма предыдущих переводов в этом месяце: " + convertToRubKop(amountOfPreviousPurchases));
+    println("Комиссия получилась: " + convertToRubKop(calcCommission(type, amountOfPreviousPurchases, amountTransfer)));
 }
 
-fun calculationAmount(amount: Double, amountOfTransfer: Double): Double {
-    val totalAmount = amount + amountOfTransfer
-    val commission = amount * 0.006 + 20
-    val totalSum = totalAmount + commission
-    return when (totalAmount) {
-        in 0.0..74_999.0 -> {
-            println("Сумма вашего первода $amount рублей")
-            amount
-        }
-        else -> {
-            println(
-                """Сумма вашего первода $amount и дополнительная комиссия $commission, 
-            общая сумма перевода $totalSum  рублей""".trimMargin()
-            )
-            totalSum
-        }
-    }
+fun convertToRubKop(amount : Int) : String{
+    return (amount / 100).toInt().toString() + " руб " + amount % 100 + " коп"
 }
-
-fun calculationAmountMirAndVisa(amount: Double): Double {
-    if (amount < 35.00) {
-        println("Ваша сумма меньше минимальной суммы перевода 35 рублей.")
-        return 0.0
-    } else {
-        val commission = amount * 0.0075
-        val totalAmount = amount + commission
-        println(
-            """Сумма вашего первода $amount и дополнительная комиссия $commission, 
-            общая сумма перевода $totalAmount  рублей""".trimMargin()
-        )
-        return totalAmount
+fun calcCommission(type : String,
+                   amountOfPreviousPurchases : Int,
+                   amountTransfer : Int) : Int{
+    when(type){
+        TYPE_1, TYPE_2 -> {
+            if ((amountOfPreviousPurchases + amountTransfer) in (1..MAXAMOUNT_TYPE_1)) return 0
+            else return ( FIXCOMMISSION_TYPE_1 + COMMISSIONPERCENTAGE_TYPE_1 * amountTransfer).toInt()
+        }
+        TYPE_3, TYPE_4 -> {
+            if (COMMISSIONPERCENTAGE_TYPE_3 * amountTransfer > FIXCOMMISSION_TYPE_1)
+                return (COMMISSIONPERCENTAGE_TYPE_3 * amountTransfer).toInt()
+            else return  FIXCOMMISSION_TYPE_3
+        }
+        TYPE_5 -> {
+            return (COMMISSIONPERCENTAGE_TYPE_5 * amountTransfer).toInt()
+        }
     }
+    return 0
 }
