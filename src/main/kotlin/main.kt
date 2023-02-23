@@ -1,55 +1,51 @@
 fun main() {
-    // Константы для лимитов по картам
-    val dailyLimit = 150000
-    val monthlyLimit = 600000
-    // Константы для лимитов по VK Pay
-    val vkPayLimit = 15000
-    val vkPayMonthlyLimit = 40000
+    val transfer = transferPayment(12_000.0)
+    val transfer_2 = transferPayment(12_000.0, typeCard = "Maestro", amountOfTransfer = 65_000.0)
+    val transfer_3 = transferPayment(12_000.0, typeCard = "Мир")
+}
 
-    // Функция расчета комиссии для переводов с карт Mastercard и Maestro
-    fun calculateMastercardMaestroCommission(amount: Int, monthlyTransferSum: Int): Double {
-        return if (monthlyTransferSum <= monthlyLimit && amount <= dailyLimit) {
-            0.0
-        } else {
-            0.006 * amount + 20
+fun transferPayment(amount: Double, typeCard: String = "VK Pay", amountOfTransfer: Double = 0.0): Double {
+    return when (typeCard) {
+        "VK Pay" -> {
+            println("Сумма вашего первода $amount рублей")
+            amount
+        }
+        "Maestro", "MasterCard" -> calculationAmount(amount, amountOfTransfer)
+        "Мир","Visa" -> calculationAmountMirAndVisa(amount)
+        else -> 0.0
+    }
+}
+
+fun calculationAmount(amount: Double, amountOfTransfer: Double): Double {
+    val totalAmount = amount + amountOfTransfer
+    val commission = amount * 0.006 + 20
+    val totalSum = totalAmount + commission
+    return when (totalAmount) {
+        in 0.0..74_999.0 -> {
+            println("Сумма вашего первода $amount рублей")
+            amount
+        }
+        else -> {
+            println(
+                """Сумма вашего первода $amount и дополнительная комиссия $commission, 
+            общая сумма перевода $totalSum  рублей""".trimMargin()
+            )
+            totalSum
         }
     }
+}
 
-    // Функция расчета комиссии для переводов с карт Visa и Mir
-    fun calculateVisaMirCommission(amount: Int): Double {
-        val commission = amount * 0.0075
-        return if (commission < 35) {
-            35.0
-        } else {
-            commission
-        }
-    }
-
-    // Функция проверки лимитов для переводов на VK Pay
-    fun checkVkPayLimits(amount: Int, monthlyTransferSum: Int): Boolean {
-        return amount <= vkPayLimit && monthlyTransferSum <= vkPayMonthlyLimit
-    }
-
-    // Пример использования функций
-    val amount = 17800
-    val cardType = "VK Pay"
-    val monthlyTransferSum = 0
-
-    val commission = when (cardType) {
-        "Mastercard", "Maestro" -> calculateMastercardMaestroCommission(amount, monthlyTransferSum)
-        "Visa", "Mir" -> calculateVisaMirCommission(amount)
-        "VK Pay" -> 0.0
-        else -> error("Неизвестный тип карты")
-    }
-
-    val total = amount + commission
-
-    if (cardType == "VK Pay" && checkVkPayLimits(amount, vkPayMonthlyLimit)) {
-        println("Перевод на VK Pay прошел успешно: $amount рублей.")
-    } else if (total <= dailyLimit && monthlyTransferSum <= monthlyLimit) {
-        println("Перевод с карты $cardType на сумму $amount рублей прошел успешно.")
+fun calculationAmountMirAndVisa(amount: Double): Double {
+    if (amount < 35.00) {
+        println("Ваша сумма меньше минимальной суммы перевода 35 рублей.")
+        return 0.0
     } else {
-        println("Превышен лимит: сумма перевода в день не должна превышать $dailyLimit рублей, а сумма перевода в месяц не должна превышать $monthlyLimit рублей.")
+        val commission = amount * 0.0075
+        val totalAmount = amount + commission
+        println(
+            """Сумма вашего первода $amount и дополнительная комиссия $commission, 
+            общая сумма перевода $totalAmount  рублей""".trimMargin()
+        )
+        return totalAmount
     }
-
 }
