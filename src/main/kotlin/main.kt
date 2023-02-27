@@ -1,23 +1,23 @@
 const val TYPE_1 = "Maestro"
 const val TYPE_2 = "MasterCard"
-const val MAXAMOUNT_TYPE_1 = 75000_00
-const val FIXCOMMISSION_TYPE_1 = 20_00
-const val COMMISSIONPERCENTAGE_TYPE_1 = 0.06
+const val MAXAMOUNT_TYPE_1 = 75000_00 // можно переводить в месяц
+const val FIXCOMMISSION_TYPE_1 = 20_00 // фиксированный налог если больше 75к
+const val COMMISSIONPERCENTAGE_TYPE_1 = 0.006 // фиксированный процент если больше 75к
 const val TYPE_3 = "VISA"
 const val TYPE_4 = "Мир"
-const val FIXCOMMISSION_TYPE_3 = 35_00
-const val COMMISSIONPERCENTAGE_TYPE_3 = 0.0075
+const val FIXCOMMISSION_TYPE_3 = 35_00 // минимум 35 рублей комисия
+const val COMMISSIONPERCENTAGE_TYPE_3 = 0.0075 // 0,75%, но минимум 35 рублей
 const val TYPE_5 = "VK Pay"
 const val COMMISSIONPERCENTAGE_TYPE_5 = 0
 
 fun main() {
-    testCalcPrint(type = TYPE_1, amountTransfer = 100_00)
+    testCalcPrint(type = TYPE_1, amountTransfer = 75000_01)
     testCalcPrint(TYPE_1, 400_00, 100_00)
     testCalcPrint(TYPE_1, 100_000_00, 50_00)
     testCalcPrint(TYPE_2, 0, 100_00)
     testCalcPrint(TYPE_2, 400_00, 100_00)
     testCalcPrint(TYPE_2, 100_000_00, 50_00)
-    testCalcPrint(TYPE_3, 0, 100_00)
+    testCalcPrint(TYPE_3, 0, 5000_00)
     testCalcPrint(TYPE_3, 400_00, 1000_00)
     testCalcPrint(TYPE_3, 100_000_00, 5000_00)
     testCalcPrint(TYPE_4, 0, 100_00)
@@ -50,7 +50,7 @@ fun calcCommission(type : String,
             else return ( FIXCOMMISSION_TYPE_1 + COMMISSIONPERCENTAGE_TYPE_1 * amountTransfer).toInt()
         }
         TYPE_3, TYPE_4 -> {
-            if (COMMISSIONPERCENTAGE_TYPE_3 * amountTransfer > FIXCOMMISSION_TYPE_1)
+            if (COMMISSIONPERCENTAGE_TYPE_3 * amountTransfer > FIXCOMMISSION_TYPE_3)
                 return (COMMISSIONPERCENTAGE_TYPE_3 * amountTransfer).toInt()
             else return  FIXCOMMISSION_TYPE_3
         }
